@@ -15,8 +15,8 @@ Planned optional adapters:
 
 ## Why This Shape
 
-DocPipe should not become a fork of every parser. Each parser remains an external
-dependency or optional integration. DocPipe owns:
+DocPipe should not become a fork of every parser. Parser libraries remain external
+dependencies or optional integrations. DocPipe owns the product workflow around them:
 
 - routing
 - retries

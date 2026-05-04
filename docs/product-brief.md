@@ -14,7 +14,7 @@ It turns messy documents into Markdown, JSON, and RAG chunks with a reviewable r
 ## MVP Scope
 
 - batch upload or folder conversion
-- automatic engine routing between MarkItDown and Docling
+- automatic parser routing across supported adapters
 - plugin-style engine registry for future adapters
 - Markdown and JSON export
 - RAG chunk JSONL export

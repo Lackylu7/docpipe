@@ -1,13 +1,14 @@
 # DocPipe
 
-DocPipe is an enterprise document preprocessing tool for AI knowledge bases. It uses
-MarkItDown for broad, fast conversion and Docling for structure-heavy documents such as
-PDFs with tables, layout, and OCR needs.
+DocPipe is an enterprise document preprocessing tool for AI knowledge bases. It routes
+documents through the best available conversion adapter, normalizes the output, checks
+conversion quality, and exports content that teams can review before importing it into a
+RAG system.
 
-The goal is not to rewrite either project. DocPipe adds the missing product layer:
+DocPipe focuses on the product layer that enterprise teams need around document parsing:
 
 - one local web UI for batch conversion
-- automatic engine routing
+- automatic parser routing
 - plugin-style engine registry
 - Markdown and JSON export
 - RAG-ready chunk generation
@@ -16,14 +17,14 @@ The goal is not to rewrite either project. DocPipe adds the missing product laye
 - starter export pack for knowledge-base imports
 - private, local-first workflow for enterprise files
 
-## When To Use Which Engine
+## Routing Strategy
 
-| File type | Default engine | Why |
+| File type | Default route | Why |
 | --- | --- | --- |
-| PDF | Docling | Better layout, tables, reading order, and structured output |
-| Word / Excel / PowerPoint | MarkItDown | Fast Office-to-Markdown conversion |
-| HTML / text / CSV / JSON | MarkItDown | Lightweight text extraction |
-| Unknown | MarkItDown first, Docling fallback | Broad compatibility |
+| PDF | Structure-aware adapter | Better layout, tables, reading order, and structured output |
+| Word / Excel / PowerPoint | General document adapter | Fast Office-to-Markdown conversion |
+| HTML / text / CSV / JSON | General text adapter | Lightweight text extraction |
+| Unknown | Broad adapter first, fallback when available | Better compatibility across mixed folders |
 
 ## Quick Start
 
@@ -115,5 +116,5 @@ docker compose up --build
 
 ## License
 
-This project is MIT licensed. MarkItDown and Docling are separate open-source projects
-with their own licenses and notices.
+This project is MIT licensed. DocPipe uses third-party open-source dependencies; see
+`THIRD_PARTY_NOTICES.md` and each dependency's package metadata for license details.

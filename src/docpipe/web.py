@@ -39,7 +39,7 @@ with st.expander("Engine registry", expanded=False):
         use_container_width=True,
     )
 
-st.info("PDF files default to Docling. Office and web/text files default to MarkItDown.")
+st.info("PDF files use the structure-aware route. Office and web/text files use the general conversion route.")
 
 tab_convert, tab_history = st.tabs(["Convert", "Job history"])
 
@@ -162,7 +162,7 @@ with tab_history:
 st.divider()
 st.subheader("Why This Exists")
 st.write(
-    "MarkItDown is fast and broad. Docling is stronger for structure-heavy PDFs. "
-    "DocPipe chooses between them, exports clean content, and creates a report that "
-    "an enterprise team can review before loading documents into an AI knowledge base."
+    "DocPipe turns mixed enterprise documents into reviewable Markdown, JSON, and RAG chunks. "
+    "It chooses a conversion route, exports clean content, and creates a report that an "
+    "enterprise team can review before loading documents into an AI knowledge base."
 )
