@@ -17,6 +17,10 @@ reports, review checklists, handoff guides, and a ZIP export bundle.
 
 ![DocPipe web workbench](docs/assets/web-workbench.png)
 
+## Quick Walkthrough
+
+![DocPipe quick walkthrough](docs/assets/docpipe-demo.gif)
+
 ## Why DocPipe
 
 Most companies do not have a clean knowledge-base problem. They have a messy document
