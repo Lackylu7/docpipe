@@ -26,6 +26,9 @@ class QualityMetrics(BaseModel):
     tables: int
     chunks: int
     empty: bool
+    quality_score: int
+    warnings: list[str] = Field(default_factory=list)
+    review_required: bool = False
 
 
 class ConversionResult(BaseModel):
@@ -47,6 +50,8 @@ class ConversionResult(BaseModel):
 
 
 class BatchReport(BaseModel):
+    job_id: str
+    output_dir: str
     total: int
     succeeded: int
     failed: int

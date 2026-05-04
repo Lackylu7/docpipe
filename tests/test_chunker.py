@@ -22,6 +22,8 @@ More content here.
     assert chunks[0].heading == "Title"
     assert metrics.tables == 1
     assert metrics.headings == 2
+    assert metrics.quality_score > 0
+    assert isinstance(metrics.warnings, list)
 
 
 def test_chunk_markdown_splits_long_content() -> None:

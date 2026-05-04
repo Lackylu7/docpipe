@@ -42,14 +42,22 @@ def chunk_markdown(markdown: str, max_chars: int = 1400) -> list[Chunk]:
 
 def quality_metrics(markdown: str, chunks: list[Chunk]) -> QualityMetrics:
     lines = markdown.splitlines()
+    chars = len(markdown)
+    headings = sum(1 for line in lines if HEADING_RE.match(line.strip()))
+    tables = _count_tables(lines)
+    warnings = _quality_warnings(markdown, chars=chars, headings=headings, chunks=len(chunks))
+    score = _quality_score(warnings)
     return QualityMetrics(
-        chars=len(markdown),
+        chars=chars,
         words=len(re.findall(r"\S+", markdown)),
         lines=len(lines),
-        headings=sum(1 for line in lines if HEADING_RE.match(line.strip())),
-        tables=_count_tables(lines),
+        headings=headings,
+        tables=tables,
         chunks=len(chunks),
         empty=not bool(markdown.strip()),
+        quality_score=score,
+        warnings=warnings,
+        review_required=score < 80 or bool(warnings),
     )
 
 
@@ -107,3 +115,50 @@ def _count_tables(lines: list[str]) -> int:
             count += 1
         in_table = is_table_line
     return count
+
+
+def _quality_warnings(markdown: str, chars: int, headings: int, chunks: int) -> list[str]:
+    warnings: list[str] = []
+    stripped = markdown.strip()
+    if not stripped:
+        warnings.append("empty_output")
+        return warnings
+    if chars < 200:
+        warnings.append("very_short_output")
+    if chunks == 0:
+        warnings.append("no_chunks")
+    if chars > 2000 and headings == 0:
+        warnings.append("long_document_without_headings")
+    if _mojibake_ratio(markdown) > 0.01:
+        warnings.append("possible_encoding_noise")
+    if _replacement_char_ratio(markdown) > 0:
+        warnings.append("contains_replacement_characters")
+    return warnings
+
+
+def _quality_score(warnings: list[str]) -> int:
+    score = 100
+    penalties = {
+        "empty_output": 100,
+        "very_short_output": 25,
+        "no_chunks": 30,
+        "long_document_without_headings": 15,
+        "possible_encoding_noise": 25,
+        "contains_replacement_characters": 25,
+    }
+    for warning in warnings:
+        score -= penalties.get(warning, 10)
+    return max(score, 0)
+
+
+def _mojibake_ratio(text: str) -> float:
+    if not text:
+        return 0
+    suspicious = sum(text.count(char) for char in ("Ã", "Â", "�", "鈥", "馃", "锟"))
+    return suspicious / len(text)
+
+
+def _replacement_char_ratio(text: str) -> float:
+    if not text:
+        return 0
+    return text.count("\ufffd") / len(text)

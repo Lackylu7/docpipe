@@ -11,6 +11,8 @@ The goal is not to rewrite either project. DocPipe adds the missing product laye
 - Markdown and JSON export
 - RAG-ready chunk generation
 - conversion quality report
+- basic quality scoring and review warnings
+- starter export pack for knowledge-base imports
 - private, local-first workflow for enterprise files
 
 ## When To Use Which Engine
@@ -57,6 +59,29 @@ It also writes:
 
 - `conversion_report.json`
 - `conversion_report.md`
+- `rag_chunks.jsonl`
+- `exports/generic_chunks.jsonl`
+- `exports/dify_chunks.csv`
+- `exports/fastgpt_chunks.jsonl`
+- `exports/ragflow_chunks.jsonl`
+- `exports/manifest.json`
+
+Each conversion run can be written into a timestamped job folder, making it easier to
+review historical runs and reprocess failed batches.
+
+## Quality Signals
+
+DocPipe adds lightweight quality checks so teams can review risky conversions before
+loading them into a knowledge base:
+
+- empty or very short output
+- possible encoding noise
+- replacement characters
+- long documents without headings
+- missing chunks
+
+These checks are intentionally conservative. They do not claim semantic correctness;
+they highlight documents that deserve human review.
 
 ## Product Direction
 

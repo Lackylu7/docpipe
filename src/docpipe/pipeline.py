@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 from docpipe.chunker import chunk_markdown, quality_metrics
@@ -97,13 +98,19 @@ def convert_batch(
     output_dir: Path,
     engine: EngineName = "auto",
     max_chunk_chars: int = 1400,
+    job_id: str | None = None,
+    create_job_dir: bool = False,
 ) -> BatchReport:
+    job_id = job_id or _new_job_id()
+    output_dir = output_dir / job_id if create_job_dir else output_dir
     files = discover_files(input_path)
     results = [
         convert_file(path, output_dir=output_dir, engine=engine, max_chunk_chars=max_chunk_chars)
         for path in files
     ]
     report = BatchReport(
+        job_id=job_id,
+        output_dir=str(output_dir.resolve()),
         total=len(results),
         succeeded=sum(1 for result in results if result.status == "success"),
         failed=sum(1 for result in results if result.status == "failed"),
@@ -124,16 +131,20 @@ def write_reports(report: BatchReport, output_dir: Path) -> None:
         f"- Total: {report.total}",
         f"- Succeeded: {report.succeeded}",
         f"- Failed: {report.failed}",
+        f"- Job ID: {report.job_id}",
+        f"- Output: {report.output_dir}",
         "",
-        "| File | Status | Engine | Chunks | Error |",
-        "| --- | --- | --- | ---: | --- |",
+        "| File | Status | Engine | Score | Warnings | Chunks | Error |",
+        "| --- | --- | --- | ---: | --- | ---: | --- |",
     ]
     for result in report.results:
         chunks = result.metrics.chunks if result.metrics else 0
+        score = result.metrics.quality_score if result.metrics else ""
+        warnings = ", ".join(result.metrics.warnings) if result.metrics else ""
         error = (result.error or "").replace("\n", " ")[:140]
         lines.append(
             f"| {Path(result.source_path).name} | {result.status} | "
-            f"{result.used_engine or ''} | {chunks} | {error} |"
+            f"{result.used_engine or ''} | {score} | {warnings} | {chunks} | {error} |"
         )
     (output_dir / "conversion_report.md").write_text("\n".join(lines), encoding="utf-8")
 
@@ -161,3 +172,7 @@ def export_rag_pack(report: BatchReport, output_dir: Path) -> Path:
 
 def _safe_stem(path: Path) -> str:
     return "".join(char if char.isalnum() or char in {"-", "_"} else "_" for char in path.stem)
+
+
+def _new_job_id() -> str:
+    return datetime.now(UTC).strftime("job-%Y%m%d-%H%M%S")

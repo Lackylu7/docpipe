@@ -18,6 +18,9 @@ It turns messy documents into Markdown, JSON, and RAG chunks with a reviewable r
 - Markdown and JSON export
 - RAG chunk JSONL export
 - quality report for success, failure, engine choice, chunks, tables, and headings
+- lightweight quality scoring and review warnings
+- starter export folders for common knowledge-base workflows
+- timestamped job folders for repeatable batch processing
 
 ## Not In Scope Yet
 
@@ -37,3 +40,10 @@ Start with service-led delivery:
 - monthly maintenance: 1000-5000 CNY
 
 Then productize export templates and industry-specific chunking rules.
+
+## Next Product Risks
+
+- Real PDF, Word, Excel, and PPT samples still need full end-to-end validation.
+- Export files are starter formats, not guaranteed one-click imports for every vendor.
+- Enterprise sales will require packaging work: Docker, Windows launcher, and private
+  deployment docs.
