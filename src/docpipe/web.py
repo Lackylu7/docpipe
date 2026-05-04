@@ -8,39 +8,44 @@ import streamlit as st
 from docpipe.exports import export_knowledge_pack
 from docpipe.engines import list_engines
 from docpipe.history import list_jobs
+from docpipe.i18n import Language, t
 from docpipe.pipeline import convert_batch, export_rag_pack
-from docpipe.templates import get_template, list_templates
+from docpipe.templates import get_template, list_templates, template_description, template_name
 
 
 st.set_page_config(page_title="DocPipe", page_icon="D", layout="wide")
 
 st.title("DocPipe")
-st.caption("Enterprise document conversion for Markdown, JSON, and RAG-ready chunks.")
 
 with st.sidebar:
-    st.header("Settings")
+    language_label = st.selectbox("Language / 语言", ["zh-CN", "en"], index=0)
+    language: Language = "zh-CN" if language_label == "zh-CN" else "en"
+    st.header(t("settings", language))
     templates = list_templates()
     workflow_template = st.selectbox(
-        "Workflow template",
+        t("workflow_template", language),
         [template.key for template in templates],
         index=0,
-        format_func=lambda key: get_template(key).name,
+        format_func=lambda key: template_name(get_template(key), language),
     )
     selected_template = get_template(workflow_template)
-    st.caption(selected_template.description)
+    st.caption(template_description(selected_template, language))
     engine_names = ["auto", *[adapter.name for adapter in list_engines()]]
-    engine = st.selectbox("Engine", engine_names, index=0)
+    engine = st.selectbox(t("engine", language), engine_names, index=0)
     max_chunk_chars = st.slider(
-        "Max chunk characters",
+        t("max_chunk_chars", language),
         min_value=500,
         max_value=3000,
         value=selected_template.max_chunk_chars,
     )
-    max_retries = st.number_input("Retries per engine", min_value=0, max_value=3, value=1)
-    output_dir = Path(st.text_input("Output folder", value="outputs")).expanduser()
-    create_job_dir = st.checkbox("Create a timestamped job folder", value=True)
-    write_export_pack = st.checkbox("Write knowledge-base export pack", value=True)
-with st.expander("Engine registry", expanded=False):
+    max_retries = st.number_input(t("max_retries", language), min_value=0, max_value=3, value=1)
+    output_dir = Path(st.text_input(t("output_folder", language), value="outputs")).expanduser()
+    create_job_dir = st.checkbox(t("create_job_dir", language), value=True)
+    write_export_pack = st.checkbox(t("write_export_pack", language), value=True)
+
+st.caption(t("app_caption", language))
+
+with st.expander(t("engine_registry", language), expanded=False):
     st.dataframe(
         [
             {
@@ -54,13 +59,13 @@ with st.expander("Engine registry", expanded=False):
         use_container_width=True,
     )
 
-st.info("PDF files use the structure-aware route. Office and web/text files use the general conversion route.")
+st.info(t("route_info", language))
 
-tab_convert, tab_history = st.tabs(["Convert", "Job history"])
+tab_convert, tab_history = st.tabs([t("convert_tab", language), t("history_tab", language)])
 
 with tab_convert:
     uploaded_files = st.file_uploader(
-        "Upload documents",
+        t("upload_documents", language),
         type=[
             "pdf",
             "docx",
@@ -85,14 +90,14 @@ with tab_convert:
         accept_multiple_files=True,
     )
 
-    if st.button("Convert", type="primary", disabled=not uploaded_files):
+    if st.button(t("convert_button", language), type="primary", disabled=not uploaded_files):
         with tempfile.TemporaryDirectory() as tmpdir:
             input_dir = Path(tmpdir)
             for uploaded_file in uploaded_files:
                 target = input_dir / uploaded_file.name
                 target.write_bytes(uploaded_file.getbuffer())
 
-            with st.spinner("Converting documents..."):
+            with st.spinner(t("spinner", language)):
                 report = convert_batch(
                     input_dir,
                     output_dir=output_dir,
@@ -105,13 +110,16 @@ with tab_convert:
                 rag_path = export_rag_pack(report, actual_output)
                 export_paths = (
                     export_knowledge_pack(
-                        report, actual_output, workflow_template=workflow_template
+                        report,
+                        actual_output,
+                        workflow_template=workflow_template,
+                        language=language,
                     )
                     if write_export_pack
                     else {}
                 )
 
-        st.success(f"Converted {report.succeeded}/{report.total} files.")
+        st.success(f"{t('converted', language)} {report.succeeded}/{report.total}")
         review_required = sum(
             1
             for result in report.results
@@ -122,21 +130,21 @@ with tab_convert:
             / max(sum(1 for result in report.results if result.metrics), 1)
         )
         metric_cols = st.columns(4)
-        metric_cols[0].metric("Files", report.total)
-        metric_cols[1].metric("Succeeded", report.succeeded)
-        metric_cols[2].metric("Review needed", review_required)
-        metric_cols[3].metric("Average score", f"{avg_score:.0f}")
-        st.write(f"Job: `{report.job_id}`")
-        st.write(f"Output folder: `{Path(report.output_dir).resolve()}`")
-        st.write(f"RAG pack: `{rag_path.resolve()}`")
+        metric_cols[0].metric(t("files", language), report.total)
+        metric_cols[1].metric(t("succeeded", language), report.succeeded)
+        metric_cols[2].metric(t("review_needed", language), review_required)
+        metric_cols[3].metric(t("average_score", language), f"{avg_score:.0f}")
+        st.write(f"{t('job', language)}: `{report.job_id}`")
+        st.write(f"{t('output_folder', language)}: `{Path(report.output_dir).resolve()}`")
+        st.write(f"{t('rag_pack', language)}: `{rag_path.resolve()}`")
         if export_paths:
-            st.write("Export pack:")
+            st.write(f"{t('export_pack', language)}:")
             for name, path in export_paths.items():
                 st.write(f"- `{name}`: `{Path(path).resolve()}`")
             zip_path = Path(export_paths["zip"])
             if zip_path.exists():
                 st.download_button(
-                    "Download export ZIP",
+                    t("download_zip", language),
                     data=zip_path.read_bytes(),
                     file_name=zip_path.name,
                     mime="application/zip",
@@ -144,7 +152,7 @@ with tab_convert:
             review_path = Path(export_paths["review_checklist_md"])
             if review_path.exists():
                 st.download_button(
-                    "Download review checklist",
+                    t("download_review", language),
                     data=review_path.read_bytes(),
                     file_name=review_path.name,
                     mime="text/markdown",
@@ -152,7 +160,7 @@ with tab_convert:
             handoff_path = Path(export_paths["handoff_guide"])
             if handoff_path.exists():
                 st.download_button(
-                    "Download handoff guide",
+                    t("download_handoff", language),
                     data=handoff_path.read_bytes(),
                     file_name=handoff_path.name,
                     mime="text/markdown",
@@ -180,21 +188,23 @@ with tab_convert:
 
         review_rows = [row for row in rows if row["review"] or row["status"] == "failed"]
         if review_rows:
-            st.warning("Some files need review before knowledge-base import.")
+            st.warning(t("review_warning", language))
             st.dataframe(review_rows, use_container_width=True)
 
         successful = [result for result in report.results if result.status == "success"]
         if successful:
-            st.subheader("Preview")
-            selected = st.selectbox("Converted file", successful, format_func=lambda item: item.filename)
+            st.subheader(t("preview", language))
+            selected = st.selectbox(
+                t("converted_file", language), successful, format_func=lambda item: item.filename
+            )
             col_source, col_markdown = st.columns(2)
             with col_source:
-                st.caption("Source preview")
-                st.text(selected.source_profile.text_preview or "Binary document preview is not available.")
+                st.caption(t("source_preview", language))
+                st.text(selected.source_profile.text_preview or t("binary_preview", language))
             with col_markdown:
-                st.caption("Converted Markdown")
+                st.caption(t("markdown_preview", language))
                 st.markdown(selected.markdown[:6000])
-            st.caption("Chunks")
+            st.caption(t("chunks", language))
             st.dataframe([chunk.model_dump() for chunk in selected.chunks], use_container_width=True)
 
 with tab_history:
@@ -202,12 +212,8 @@ with tab_history:
     if jobs:
         st.dataframe(jobs, use_container_width=True)
     else:
-        st.write("No conversion jobs found yet.")
+        st.write(t("no_jobs", language))
 
 st.divider()
-st.subheader("Why This Exists")
-st.write(
-    "DocPipe turns mixed enterprise documents into reviewable Markdown, JSON, and RAG chunks. "
-    "It chooses a conversion route, exports clean content, and creates a report that an "
-    "enterprise team can review before loading documents into an AI knowledge base."
-)
+st.subheader(t("why_title", language))
+st.write(t("why_body", language))

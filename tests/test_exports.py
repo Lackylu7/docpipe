@@ -127,3 +127,42 @@ def test_export_knowledge_pack_uses_workflow_template(tmp_path):
     manifest = (tmp_path / "exports" / "manifest.json").read_text(encoding="utf-8")
     assert "Enterprise policy knowledge base" in handoff
     assert '"workflow_template": "enterprise-policy"' in manifest
+
+
+def test_export_knowledge_pack_writes_chinese_handoff(tmp_path):
+    result = ConversionResult(
+        source_path=str(tmp_path / "policy.md"),
+        requested_engine="auto",
+        used_engine="markitdown",
+        status="success",
+        markdown="# Policy",
+        chunks=[Chunk(index=0, text="policy", chars=6, heading="Policy")],
+        metrics=QualityMetrics(
+            chars=8,
+            words=1,
+            lines=1,
+            headings=1,
+            tables=0,
+            chunks=1,
+            empty=False,
+            quality_score=100,
+        ),
+    )
+    report = BatchReport(
+        job_id="job-zh",
+        output_dir=str(tmp_path),
+        total=1,
+        succeeded=1,
+        failed=0,
+        results=[result],
+    )
+
+    export_knowledge_pack(
+        report, tmp_path, workflow_template="enterprise-policy", language="zh-CN"
+    )
+
+    handoff = (tmp_path / "exports" / "handoff_guide.md").read_text(encoding="utf-8")
+    manifest = (tmp_path / "exports" / "manifest.json").read_text(encoding="utf-8")
+    assert "DocPipe 交付指南" in handoff
+    assert "企业制度知识库" in handoff
+    assert '"language": "zh-CN"' in manifest

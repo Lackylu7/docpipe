@@ -86,10 +86,15 @@ Useful commands:
 
 ```powershell
 docpipe demo
+docpipe demo --language zh-CN
 docpipe engines
 docpipe templates
+docpipe templates --language zh-CN
 docpipe history --output .\outputs
 ```
+
+Chinese sample files are available in `samples-cn/`. The Web UI includes a language
+selector for Chinese and English.
 
 ## Routing Strategy
 
@@ -129,6 +134,7 @@ humans can inspect the files most likely to hurt knowledge-base quality.
 - `docs/demo-walkthrough.md`: 3-minute product walkthrough
 - `docs/demo-result-preview.md`: example output from the included demo
 - `docs/industry-templates.md`: workflow templates for repeatable customer delivery
+- `docs/localization.md`: Chinese and English language support
 - `docs/deployment.md`: Windows and Docker deployment notes
 - `docs/validation.md`: real-document validation checklist
 - `docs/smoke-test.md`: latest local smoke-test result

@@ -24,6 +24,7 @@ It turns messy documents into Markdown, JSON, and RAG chunks with a reviewable r
 - portable export ZIP for customer handoff
 - review checklist for risky conversions
 - workflow templates for policy, support, and product-manual projects
+- Chinese and English UI/output language support
 - timestamped job folders for repeatable batch processing
 - Windows local startup script
 - included sample documents and one-command demo

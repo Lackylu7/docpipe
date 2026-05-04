@@ -19,6 +19,7 @@ List templates:
 
 ```powershell
 docpipe templates
+docpipe templates --language zh-CN
 ```
 
 Run the included demo with the enterprise policy template:
@@ -31,6 +32,7 @@ Convert a customer folder with the support FAQ template:
 
 ```powershell
 docpipe convert .\customer-docs --workflow-template support-faq
+docpipe convert .\samples-cn --workflow-template enterprise-policy --language zh-CN
 ```
 
 ## Handoff Guide

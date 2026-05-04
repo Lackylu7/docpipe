@@ -9,9 +9,10 @@ from rich.table import Table
 from docpipe.engines import list_engines
 from docpipe.exports import export_knowledge_pack
 from docpipe.history import list_jobs
+from docpipe.i18n import Language
 from docpipe.models import EngineName
 from docpipe.pipeline import convert_batch, export_rag_pack
-from docpipe.templates import get_template, list_templates
+from docpipe.templates import get_template, list_templates, template_description, template_name
 
 app = typer.Typer(help="Convert enterprise documents into Markdown, JSON, and RAG chunks.")
 console = Console()
@@ -25,6 +26,7 @@ def convert(
     workflow_template: str = typer.Option(
         "general", help="Workflow template for review and handoff guidance."
     ),
+    language: Language = typer.Option("en", help="Output language: en or zh-CN."),
     max_chunk_chars: int = typer.Option(
         0, help="Maximum characters per RAG chunk. Use 0 for the selected workflow template."
     ),
@@ -47,7 +49,9 @@ def convert(
     if rag_pack:
         export_rag_pack(report, actual_output)
     if export_pack:
-        export_knowledge_pack(report, actual_output, workflow_template=workflow_template)
+        export_knowledge_pack(
+            report, actual_output, workflow_template=workflow_template, language=language
+        )
 
     table = Table(title="DocPipe Conversion Report")
     table.add_column("File")
@@ -72,7 +76,7 @@ def convert(
         )
     console.print(table)
     console.print(f"Job: {report.job_id}")
-    console.print(f"Workflow template: {template.name}")
+    console.print(f"Workflow template: {template_name(template, language)}")
     console.print(f"Output: {actual_output.resolve()}")
 
 
@@ -82,6 +86,7 @@ def demo(
     workflow_template: str = typer.Option(
         "enterprise-policy", help="Workflow template for the included demo."
     ),
+    language: Language = typer.Option("zh-CN", help="Output language: en or zh-CN."),
     max_chunk_chars: int = typer.Option(
         0, help="Maximum characters per RAG chunk. Use 0 for the selected workflow template."
     ),
@@ -102,17 +107,27 @@ def demo(
     actual_output = Path(report.output_dir)
     export_rag_pack(report, actual_output)
     export_paths = export_knowledge_pack(
-        report, actual_output, workflow_template=workflow_template
+        report, actual_output, workflow_template=workflow_template, language=language
     )
 
-    console.print("[bold]DocPipe demo completed[/bold]")
-    console.print(f"Workflow template: {template.name}")
-    console.print(f"Samples: {sample_dir.resolve()}")
-    console.print(f"Output: {actual_output.resolve()}")
-    console.print(f"Export ZIP: {Path(export_paths['zip']).resolve()}")
-    console.print(f"Review checklist: {Path(export_paths['review_checklist_md']).resolve()}")
-    console.print(f"Handoff guide: {Path(export_paths['handoff_guide']).resolve()}")
-    console.print(f"Converted: {report.succeeded}/{report.total}")
+    if language == "zh-CN":
+        console.print("[bold]DocPipe 演示已完成[/bold]")
+        console.print(f"工作流模板：{template_name(template, language)}")
+        console.print(f"样例目录：{sample_dir.resolve()}")
+        console.print(f"输出目录：{actual_output.resolve()}")
+        console.print(f"导出 ZIP：{Path(export_paths['zip']).resolve()}")
+        console.print(f"复核清单：{Path(export_paths['review_checklist_md']).resolve()}")
+        console.print(f"交付指南：{Path(export_paths['handoff_guide']).resolve()}")
+        console.print(f"转换成功：{report.succeeded}/{report.total}")
+    else:
+        console.print("[bold]DocPipe demo completed[/bold]")
+        console.print(f"Workflow template: {template_name(template, language)}")
+        console.print(f"Samples: {sample_dir.resolve()}")
+        console.print(f"Output: {actual_output.resolve()}")
+        console.print(f"Export ZIP: {Path(export_paths['zip']).resolve()}")
+        console.print(f"Review checklist: {Path(export_paths['review_checklist_md']).resolve()}")
+        console.print(f"Handoff guide: {Path(export_paths['handoff_guide']).resolve()}")
+        console.print(f"Converted: {report.succeeded}/{report.total}")
 
 
 @app.command()
@@ -154,7 +169,7 @@ def engines() -> None:
 
 
 @app.command()
-def templates() -> None:
+def templates(language: Language = typer.Option("en", help="Display language: en or zh-CN.")) -> None:
     table = Table(title="DocPipe Workflow Templates")
     table.add_column("Key")
     table.add_column("Name")
@@ -163,9 +178,9 @@ def templates() -> None:
     for template in list_templates():
         table.add_row(
             template.key,
-            template.name,
+            template_name(template, language),
             str(template.max_chunk_chars),
-            template.description,
+            template_description(template, language),
         )
     console.print(table)
 
