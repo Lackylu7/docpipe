@@ -11,6 +11,7 @@ from docpipe.exports import export_knowledge_pack
 from docpipe.history import list_jobs
 from docpipe.models import EngineName
 from docpipe.pipeline import convert_batch, export_rag_pack
+from docpipe.templates import get_template, list_templates
 
 app = typer.Typer(help="Convert enterprise documents into Markdown, JSON, and RAG chunks.")
 console = Console()
@@ -21,17 +22,24 @@ def convert(
     input_path: Path = typer.Argument(..., exists=True, help="File or folder to convert."),
     output: Path = typer.Option(Path("outputs"), "--output", "-o", help="Output folder."),
     engine: EngineName = typer.Option("auto", "--engine", "-e", help="auto, markitdown, or docling."),
-    max_chunk_chars: int = typer.Option(1400, help="Maximum characters per RAG chunk."),
+    workflow_template: str = typer.Option(
+        "general", help="Workflow template for review and handoff guidance."
+    ),
+    max_chunk_chars: int = typer.Option(
+        0, help="Maximum characters per RAG chunk. Use 0 for the selected workflow template."
+    ),
     rag_pack: bool = typer.Option(True, help="Write rag_chunks.jsonl."),
     job_dir: bool = typer.Option(True, help="Write outputs into a timestamped job folder."),
     export_pack: bool = typer.Option(True, help="Write starter export files for knowledge bases."),
     max_retries: int = typer.Option(1, help="Retry each engine this many times after a failure."),
 ) -> None:
+    template = get_template(workflow_template)
+    chunk_chars = max_chunk_chars or template.max_chunk_chars
     report = convert_batch(
         input_path,
         output,
         engine=engine,
-        max_chunk_chars=max_chunk_chars,
+        max_chunk_chars=chunk_chars,
         create_job_dir=job_dir,
         max_retries=max_retries,
     )
@@ -39,7 +47,7 @@ def convert(
     if rag_pack:
         export_rag_pack(report, actual_output)
     if export_pack:
-        export_knowledge_pack(report, actual_output)
+        export_knowledge_pack(report, actual_output, workflow_template=workflow_template)
 
     table = Table(title="DocPipe Conversion Report")
     table.add_column("File")
@@ -64,34 +72,46 @@ def convert(
         )
     console.print(table)
     console.print(f"Job: {report.job_id}")
+    console.print(f"Workflow template: {template.name}")
     console.print(f"Output: {actual_output.resolve()}")
 
 
 @app.command()
 def demo(
     output: Path = typer.Option(Path("outputs/demo"), "--output", "-o", help="Demo output folder."),
-    max_chunk_chars: int = typer.Option(1200, help="Maximum characters per RAG chunk."),
+    workflow_template: str = typer.Option(
+        "enterprise-policy", help="Workflow template for the included demo."
+    ),
+    max_chunk_chars: int = typer.Option(
+        0, help="Maximum characters per RAG chunk. Use 0 for the selected workflow template."
+    ),
 ) -> None:
     """Run DocPipe against the included sample documents."""
     sample_dir = _find_samples_dir()
+    template = get_template(workflow_template)
+    chunk_chars = max_chunk_chars or template.max_chunk_chars
     report = convert_batch(
         sample_dir,
         output,
         engine="auto",
-        max_chunk_chars=max_chunk_chars,
+        max_chunk_chars=chunk_chars,
         job_id="demo",
         create_job_dir=False,
         max_retries=1,
     )
     actual_output = Path(report.output_dir)
     export_rag_pack(report, actual_output)
-    export_paths = export_knowledge_pack(report, actual_output)
+    export_paths = export_knowledge_pack(
+        report, actual_output, workflow_template=workflow_template
+    )
 
     console.print("[bold]DocPipe demo completed[/bold]")
+    console.print(f"Workflow template: {template.name}")
     console.print(f"Samples: {sample_dir.resolve()}")
     console.print(f"Output: {actual_output.resolve()}")
     console.print(f"Export ZIP: {Path(export_paths['zip']).resolve()}")
     console.print(f"Review checklist: {Path(export_paths['review_checklist_md']).resolve()}")
+    console.print(f"Handoff guide: {Path(export_paths['handoff_guide']).resolve()}")
     console.print(f"Converted: {report.succeeded}/{report.total}")
 
 
@@ -129,6 +149,23 @@ def engines() -> None:
             str(adapter.priority),
             ", ".join(sorted(adapter.extensions)) or "planned adapter",
             adapter.description,
+        )
+    console.print(table)
+
+
+@app.command()
+def templates() -> None:
+    table = Table(title="DocPipe Workflow Templates")
+    table.add_column("Key")
+    table.add_column("Name")
+    table.add_column("Chunk chars", justify="right")
+    table.add_column("Best for")
+    for template in list_templates():
+        table.add_row(
+            template.key,
+            template.name,
+            str(template.max_chunk_chars),
+            template.description,
         )
     console.print(table)
 

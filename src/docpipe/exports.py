@@ -6,12 +6,16 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from docpipe.models import BatchReport, ConversionResult
+from docpipe.templates import get_template
 
 
-def export_knowledge_pack(report: BatchReport, output_dir: Path) -> dict[str, str]:
+def export_knowledge_pack(
+    report: BatchReport, output_dir: Path, workflow_template: str = "general"
+) -> dict[str, str]:
     """Write vendor-friendly starter exports without locking the pipeline to one platform."""
     export_dir = output_dir / "exports"
     export_dir.mkdir(parents=True, exist_ok=True)
+    get_template(workflow_template)
 
     chunks = _chunk_rows(report)
     paths = {}
@@ -26,7 +30,10 @@ def export_knowledge_pack(report: BatchReport, output_dir: Path) -> dict[str, st
     paths["review_checklist_md"] = _write_review_checklist_md(
         export_dir / "review_checklist.md", report
     )
-    paths["manifest"] = _write_manifest(export_dir / "manifest.json", report, chunks)
+    paths["handoff_guide"] = _write_handoff_guide(
+        export_dir / "handoff_guide.md", report, workflow_template
+    )
+    paths["manifest"] = _write_manifest(export_dir / "manifest.json", report, chunks, workflow_template)
     paths["zip"] = _write_export_zip(export_dir / "docpipe_export_pack.zip", output_dir)
     return {name: str(path) for name, path in paths.items()}
 
@@ -84,11 +91,16 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> Path:
     return path
 
 
-def _write_manifest(path: Path, report: BatchReport, rows: list[dict[str, object]]) -> Path:
+def _write_manifest(
+    path: Path, report: BatchReport, rows: list[dict[str, object]], workflow_template: str
+) -> Path:
     review_count = sum(1 for result in report.results if _needs_review(result))
+    template = get_template(workflow_template)
     payload = {
         "job_id": report.job_id,
         "created_at": report.created_at,
+        "workflow_template": template.key,
+        "workflow_template_name": template.name,
         "total_files": report.total,
         "succeeded": report.succeeded,
         "failed": report.failed,
@@ -102,6 +114,7 @@ def _write_manifest(path: Path, report: BatchReport, rows: list[dict[str, object
             "ragflow_jsonl": "JSONL starter format for custom import adapters.",
             "review_checklist_csv": "Files that should be checked before knowledge-base import.",
             "review_checklist_md": "Human-readable review checklist for handoff.",
+            "handoff_guide": "Template-specific import and review guide.",
             "zip": "Portable handoff bundle containing reports, exports, Markdown, and JSON output.",
         },
     }
@@ -173,6 +186,49 @@ def _write_review_checklist_md(path: Path, report: BatchReport) -> Path:
                 f"{_escape_table(str(row['warnings']))} | "
                 f"{_escape_table(str(row['recommended_action']))} |"
             )
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
+def _write_handoff_guide(path: Path, report: BatchReport, workflow_template: str) -> Path:
+    template = get_template(workflow_template)
+    review_count = sum(1 for result in report.results if _needs_review(result))
+    lines = [
+        "# DocPipe Handoff Guide",
+        "",
+        f"Workflow template: **{template.name}**",
+        "",
+        template.description,
+        "",
+        "## Batch Summary",
+        "",
+        f"- Job ID: `{report.job_id}`",
+        f"- Total files: {report.total}",
+        f"- Succeeded: {report.succeeded}",
+        f"- Failed: {report.failed}",
+        f"- Files requiring review: {review_count}",
+        "",
+        "## Review Focus",
+        "",
+    ]
+    lines.extend(f"- {item}" for item in template.review_focus)
+    lines.extend(["", "## Recommended Handoff Steps", ""])
+    lines.extend(f"{index}. {step}" for index, step in enumerate(template.handoff_steps, start=1))
+    lines.extend(
+        [
+            "",
+            "## Files To Open First",
+            "",
+            "- `conversion_report.md`",
+            "- `exports/review_checklist.md`",
+            "- `rag_chunks.jsonl`",
+            "- the vendor starter file for the target knowledge-base system",
+            "",
+            "## Import Caution",
+            "",
+            "Starter exports may need customer-specific field mapping before production import.",
+        ]
+    )
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
 

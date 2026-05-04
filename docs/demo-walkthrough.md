@@ -33,6 +33,7 @@ Open these files first:
 - `outputs/demo/conversion_report.md`
 - `outputs/demo/rag_chunks.jsonl`
 - `outputs/demo/exports/review_checklist.md`
+- `outputs/demo/exports/handoff_guide.md`
 - `outputs/demo/exports/docpipe_export_pack.zip`
 
 For a committed example, see `docs/demo-result-preview.md`.

@@ -13,6 +13,7 @@ docpipe demo --output outputs/demo
 - Failed: 0
 - Export ZIP: `outputs/demo/exports/docpipe_export_pack.zip`
 - Review checklist: `outputs/demo/exports/review_checklist.md`
+- Handoff guide: `outputs/demo/exports/handoff_guide.md`
 
 ## Conversion Report
 
@@ -41,4 +42,5 @@ The included demo is intentionally small, but it exercises the full product work
 - score conversion quality
 - create review tasks for risky files
 - generate vendor starter exports
+- write a template-specific handoff guide
 - package the handoff ZIP

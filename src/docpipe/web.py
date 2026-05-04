@@ -9,6 +9,7 @@ from docpipe.exports import export_knowledge_pack
 from docpipe.engines import list_engines
 from docpipe.history import list_jobs
 from docpipe.pipeline import convert_batch, export_rag_pack
+from docpipe.templates import get_template, list_templates
 
 
 st.set_page_config(page_title="DocPipe", page_icon="D", layout="wide")
@@ -18,9 +19,23 @@ st.caption("Enterprise document conversion for Markdown, JSON, and RAG-ready chu
 
 with st.sidebar:
     st.header("Settings")
+    templates = list_templates()
+    workflow_template = st.selectbox(
+        "Workflow template",
+        [template.key for template in templates],
+        index=0,
+        format_func=lambda key: get_template(key).name,
+    )
+    selected_template = get_template(workflow_template)
+    st.caption(selected_template.description)
     engine_names = ["auto", *[adapter.name for adapter in list_engines()]]
     engine = st.selectbox("Engine", engine_names, index=0)
-    max_chunk_chars = st.slider("Max chunk characters", min_value=500, max_value=3000, value=1400)
+    max_chunk_chars = st.slider(
+        "Max chunk characters",
+        min_value=500,
+        max_value=3000,
+        value=selected_template.max_chunk_chars,
+    )
     max_retries = st.number_input("Retries per engine", min_value=0, max_value=3, value=1)
     output_dir = Path(st.text_input("Output folder", value="outputs")).expanduser()
     create_job_dir = st.checkbox("Create a timestamped job folder", value=True)
@@ -88,7 +103,13 @@ with tab_convert:
                 )
                 actual_output = Path(report.output_dir)
                 rag_path = export_rag_pack(report, actual_output)
-                export_paths = export_knowledge_pack(report, actual_output) if write_export_pack else {}
+                export_paths = (
+                    export_knowledge_pack(
+                        report, actual_output, workflow_template=workflow_template
+                    )
+                    if write_export_pack
+                    else {}
+                )
 
         st.success(f"Converted {report.succeeded}/{report.total} files.")
         review_required = sum(
@@ -126,6 +147,14 @@ with tab_convert:
                     "Download review checklist",
                     data=review_path.read_bytes(),
                     file_name=review_path.name,
+                    mime="text/markdown",
+                )
+            handoff_path = Path(export_paths["handoff_guide"])
+            if handoff_path.exists():
+                st.download_button(
+                    "Download handoff guide",
+                    data=handoff_path.read_bytes(),
+                    file_name=handoff_path.name,
                     mime="text/markdown",
                 )
 

@@ -15,6 +15,7 @@ before those files are safe to load into an AI assistant.
 - Route each file through the best available parser adapter
 - Generate Markdown, JSON metadata, and RAG-ready chunks
 - Flag risky conversions before they enter a knowledge base
+- Apply workflow templates for policy, support, and product-manual projects
 - Export starter packs for common knowledge-base tools
 - Package reports and exports into one handoff ZIP
 - Keep enterprise files local by default
@@ -57,6 +58,7 @@ sample files.
 | `exports/fastgpt_chunks.jsonl` | Starter import file for FastGPT/custom adapters |
 | `exports/ragflow_chunks.jsonl` | Starter import file for RAGFlow/custom adapters |
 | `exports/review_checklist.md` | Files that need manual review |
+| `exports/handoff_guide.md` | Template-specific customer handoff guide |
 | `exports/docpipe_export_pack.zip` | Portable handoff bundle |
 
 ## Run The Web App
@@ -85,6 +87,7 @@ Useful commands:
 ```powershell
 docpipe demo
 docpipe engines
+docpipe templates
 docpipe history --output .\outputs
 ```
 
@@ -125,6 +128,7 @@ humans can inspect the files most likely to hurt knowledge-base quality.
 
 - `docs/demo-walkthrough.md`: 3-minute product walkthrough
 - `docs/demo-result-preview.md`: example output from the included demo
+- `docs/industry-templates.md`: workflow templates for repeatable customer delivery
 - `docs/deployment.md`: Windows and Docker deployment notes
 - `docs/validation.md`: real-document validation checklist
 - `docs/smoke-test.md`: latest local smoke-test result
