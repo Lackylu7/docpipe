@@ -7,6 +7,8 @@ It is built for teams that have folders full of PDFs, Word files, spreadsheets, 
 policies, and FAQs, but need structured Markdown, JSON, chunks, reports, and import packs
 before those files are safe to load into an AI assistant.
 
+![DocPipe web workbench](docs/assets/web-workbench.png)
+
 ## Why It Matters
 
 - Convert mixed document folders in one local workflow
@@ -38,6 +40,9 @@ scripts\run_demo.ps1
 
 The demo converts files in `samples/` and writes a complete output bundle to
 `outputs/demo/`.
+
+See `docs/demo-result-preview.md` for an example report generated from the included
+sample files.
 
 ## What The Demo Produces
 
@@ -119,6 +124,7 @@ humans can inspect the files most likely to hurt knowledge-base quality.
 ## Deployment And Validation
 
 - `docs/demo-walkthrough.md`: 3-minute product walkthrough
+- `docs/demo-result-preview.md`: example output from the included demo
 - `docs/deployment.md`: Windows and Docker deployment notes
 - `docs/validation.md`: real-document validation checklist
 - `docs/smoke-test.md`: latest local smoke-test result

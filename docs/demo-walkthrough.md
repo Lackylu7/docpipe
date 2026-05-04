@@ -35,6 +35,8 @@ Open these files first:
 - `outputs/demo/exports/review_checklist.md`
 - `outputs/demo/exports/docpipe_export_pack.zip`
 
+For a committed example, see `docs/demo-result-preview.md`.
+
 The report answers:
 
 - which files converted successfully
