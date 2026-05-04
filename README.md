@@ -1,5 +1,7 @@
 # DocPipe
 
+[![CI](https://github.com/Lackylu7/docpipe/actions/workflows/ci.yml/badge.svg)](https://github.com/Lackylu7/docpipe/actions/workflows/ci.yml)
+
 DocPipe turns messy company documents into clean, reviewable knowledge-base imports for
 Dify, FastGPT, RAGFlow, Coze, and custom RAG systems.
 
@@ -91,6 +93,7 @@ docpipe engines
 docpipe templates
 docpipe templates --language zh-CN
 docpipe history --output .\outputs
+scripts\run_checks.ps1
 ```
 
 Chinese sample files are available in `samples-cn/`. The Web UI includes a language
@@ -135,7 +138,10 @@ humans can inspect the files most likely to hurt knowledge-base quality.
 - `docs/demo-result-preview.md`: example output from the included demo
 - `docs/industry-templates.md`: workflow templates for repeatable customer delivery
 - `docs/localization.md`: Chinese and English language support
+- `docs/roadmap.md`: near-term product direction
+- `docs/commercial-delivery.md`: service-led delivery notes
 - `docs/deployment.md`: Windows and Docker deployment notes
+- `CHANGELOG.md`: version history
 - `docs/validation.md`: real-document validation checklist
 - `docs/smoke-test.md`: latest local smoke-test result
 - `docs/adapter-architecture.md`: parser adapter design
