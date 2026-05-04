@@ -1,0 +1,163 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from docpipe.chunker import chunk_markdown, quality_metrics
+from docpipe.engines import choose_engine, convert_with_engine, fallback_engine
+from docpipe.models import BatchReport, ConversionResult, EngineName
+
+
+SUPPORTED_EXTENSIONS = {
+    ".pdf",
+    ".docx",
+    ".pptx",
+    ".xlsx",
+    ".xls",
+    ".csv",
+    ".html",
+    ".htm",
+    ".txt",
+    ".json",
+    ".xml",
+    ".md",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".wav",
+    ".mp3",
+    ".m4a",
+}
+
+
+def discover_files(input_path: Path) -> list[Path]:
+    if input_path.is_file():
+        return [input_path]
+    return sorted(
+        path
+        for path in input_path.rglob("*")
+        if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS
+    )
+
+
+def convert_file(
+    source_path: Path,
+    output_dir: Path,
+    engine: EngineName = "auto",
+    max_chunk_chars: int = 1400,
+) -> ConversionResult:
+    source_path = source_path.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    requested_engine = engine
+    selected_engine = choose_engine(source_path, engine)
+
+    try:
+        try:
+            markdown = convert_with_engine(source_path, selected_engine)
+            used_engine = selected_engine
+        except Exception:
+            if engine != "auto":
+                raise
+            used_engine = fallback_engine(selected_engine)
+            markdown = convert_with_engine(source_path, used_engine)
+
+        chunks = chunk_markdown(markdown, max_chars=max_chunk_chars)
+        metrics = quality_metrics(markdown, chunks)
+        stem = _safe_stem(source_path)
+        markdown_path = output_dir / f"{stem}.md"
+        json_path = output_dir / f"{stem}.json"
+        markdown_path.write_text(markdown, encoding="utf-8")
+
+        result = ConversionResult(
+            source_path=str(source_path),
+            output_markdown_path=str(markdown_path),
+            output_json_path=str(json_path),
+            requested_engine=requested_engine,
+            used_engine=used_engine,
+            status="success",
+            markdown=markdown,
+            chunks=chunks,
+            metrics=metrics,
+        )
+        json_path.write_text(result.model_dump_json(indent=2), encoding="utf-8")
+        return result
+    except Exception as exc:
+        return ConversionResult(
+            source_path=str(source_path),
+            requested_engine=requested_engine,
+            used_engine=selected_engine,
+            status="failed",
+            error=str(exc),
+        )
+
+
+def convert_batch(
+    input_path: Path,
+    output_dir: Path,
+    engine: EngineName = "auto",
+    max_chunk_chars: int = 1400,
+) -> BatchReport:
+    files = discover_files(input_path)
+    results = [
+        convert_file(path, output_dir=output_dir, engine=engine, max_chunk_chars=max_chunk_chars)
+        for path in files
+    ]
+    report = BatchReport(
+        total=len(results),
+        succeeded=sum(1 for result in results if result.status == "success"),
+        failed=sum(1 for result in results if result.status == "failed"),
+        results=results,
+    )
+    write_reports(report, output_dir)
+    return report
+
+
+def write_reports(report: BatchReport, output_dir: Path) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "conversion_report.json").write_text(
+        report.model_dump_json(indent=2), encoding="utf-8"
+    )
+    lines = [
+        "# Conversion Report",
+        "",
+        f"- Total: {report.total}",
+        f"- Succeeded: {report.succeeded}",
+        f"- Failed: {report.failed}",
+        "",
+        "| File | Status | Engine | Chunks | Error |",
+        "| --- | --- | --- | ---: | --- |",
+    ]
+    for result in report.results:
+        chunks = result.metrics.chunks if result.metrics else 0
+        error = (result.error or "").replace("\n", " ")[:140]
+        lines.append(
+            f"| {Path(result.source_path).name} | {result.status} | "
+            f"{result.used_engine or ''} | {chunks} | {error} |"
+        )
+    (output_dir / "conversion_report.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def export_rag_pack(report: BatchReport, output_dir: Path) -> Path:
+    rows = []
+    for result in report.results:
+        if result.status != "success":
+            continue
+        for chunk in result.chunks:
+            rows.append(
+                {
+                    "source": result.source_path,
+                    "filename": Path(result.source_path).name,
+                    "engine": result.used_engine,
+                    "chunk_index": chunk.index,
+                    "heading": chunk.heading,
+                    "text": chunk.text,
+                }
+            )
+    path = output_dir / "rag_chunks.jsonl"
+    path.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in rows), encoding="utf-8")
+    return path
+
+
+def _safe_stem(path: Path) -> str:
+    return "".join(char if char.isalnum() or char in {"-", "_"} else "_" for char in path.stem)
