@@ -1,0 +1,30 @@
+name: Customer document validation
+description: Track findings from testing real customer-like documents
+title: "[Validation]: "
+labels: ["validation"]
+body:
+  - type: input
+    id: dataset
+    attributes:
+      label: Dataset description
+      placeholder: "20 HR PDFs, 15 FAQ CSVs, bilingual manuals, etc."
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command or Web settings
+      render: powershell
+  - type: textarea
+    id: results
+    attributes:
+      label: Results
+      placeholder: "Success rate, warnings, chunk count, failed files"
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Quality risks found
+      placeholder: "Tables lost, headings missing, OCR failed, duplicate chunks..."
+

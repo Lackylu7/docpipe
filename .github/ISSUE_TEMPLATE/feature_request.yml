@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a product or workflow improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What customer or user problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should DocPipe do?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Web UI
+        - CLI
+        - Parser adapter
+        - Export format
+        - Workflow template
+        - Deployment
+        - Documentation
+        - Other
+

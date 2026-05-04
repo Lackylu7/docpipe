@@ -86,6 +86,9 @@ Then visit the local URL shown by Streamlit, usually `http://127.0.0.1:8501`.
 
 Example output preview: [docs/demo-result-preview.md](docs/demo-result-preview.md)
 
+For a more realistic Chinese company-folder demo, see
+[docs/case-study-company-knowledge-base.md](docs/case-study-company-knowledge-base.md).
+
 ## Web UI
 
 The Web workbench supports:
@@ -198,9 +201,12 @@ Deployment notes: [docs/deployment.md](docs/deployment.md)
 | --- | --- |
 | [docs/demo-walkthrough.md](docs/demo-walkthrough.md) | 3-minute product walkthrough |
 | [docs/demo-result-preview.md](docs/demo-result-preview.md) | committed sample output preview |
+| [docs/case-study-company-knowledge-base.md](docs/case-study-company-knowledge-base.md) | realistic Chinese company-folder demo |
 | [docs/industry-templates.md](docs/industry-templates.md) | workflow template guide |
 | [docs/localization.md](docs/localization.md) | Chinese and English support |
 | [docs/commercial-delivery.md](docs/commercial-delivery.md) | service-led delivery notes |
+| [docs/benchmarks.md](docs/benchmarks.md) | current local benchmark notes |
+| [docs/limitations.md](docs/limitations.md) | known limitations and production caveats |
 | [docs/validation.md](docs/validation.md) | real-document validation checklist |
 | [docs/smoke-test.md](docs/smoke-test.md) | latest smoke-test notes |
 | [docs/roadmap.md](docs/roadmap.md) | near-term product direction |
