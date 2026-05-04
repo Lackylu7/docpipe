@@ -21,6 +21,9 @@ It turns messy documents into Markdown, JSON, and RAG chunks with a reviewable r
 - lightweight quality scoring and review warnings
 - starter export folders for common knowledge-base workflows
 - timestamped job folders for repeatable batch processing
+- Windows local startup script
+- Docker deployment files
+- validation checklist for real customer samples
 
 ## Not In Scope Yet
 
@@ -43,7 +46,6 @@ Then productize export templates and industry-specific chunking rules.
 
 ## Next Product Risks
 
-- Real PDF, Word, Excel, and PPT samples still need full end-to-end validation.
 - Export files are starter formats, not guaranteed one-click imports for every vendor.
-- Enterprise sales will require packaging work: Docker, Windows launcher, and private
-  deployment docs.
+- Enterprise sales will still need customer-specific import adapters and private
+  deployment hardening.

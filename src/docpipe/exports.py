@@ -16,6 +16,7 @@ def export_knowledge_pack(report: BatchReport, output_dir: Path) -> dict[str, st
     paths = {
         "generic_jsonl": _write_jsonl(export_dir / "generic_chunks.jsonl", chunks),
         "dify_csv": _write_csv(export_dir / "dify_chunks.csv", chunks),
+        "coze_csv": _write_csv(export_dir / "coze_chunks.csv", chunks),
         "fastgpt_jsonl": _write_jsonl(export_dir / "fastgpt_chunks.jsonl", chunks),
         "ragflow_jsonl": _write_jsonl(export_dir / "ragflow_chunks.jsonl", chunks),
         "manifest": _write_manifest(export_dir / "manifest.json", report, chunks),
@@ -81,6 +82,7 @@ def _write_manifest(path: Path, report: BatchReport, rows: list[dict[str, object
         "formats": {
             "generic_jsonl": "Vendor-neutral JSONL, one chunk per line.",
             "dify_csv": "CSV starter format with content and metadata columns.",
+            "coze_csv": "CSV starter format with content and metadata columns.",
             "fastgpt_jsonl": "JSONL starter format for custom import adapters.",
             "ragflow_jsonl": "JSONL starter format for custom import adapters.",
         },

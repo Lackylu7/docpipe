@@ -31,6 +31,12 @@ class QualityMetrics(BaseModel):
     review_required: bool = False
 
 
+class SourceProfile(BaseModel):
+    size_bytes: int
+    extension: str
+    text_preview: str | None = None
+
+
 class ConversionResult(BaseModel):
     source_path: str
     output_markdown_path: str | None = None
@@ -42,6 +48,8 @@ class ConversionResult(BaseModel):
     markdown: str = ""
     chunks: list[Chunk] = Field(default_factory=list)
     metrics: QualityMetrics | None = None
+    source_profile: SourceProfile | None = None
+    attempts: int = 1
     created_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     @property

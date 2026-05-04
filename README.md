@@ -42,6 +42,12 @@ Run the web UI:
 python -m streamlit run src/docpipe/web.py
 ```
 
+Or use the Windows launcher:
+
+```powershell
+scripts\run_web.ps1
+```
+
 Run the CLI:
 
 ```powershell
@@ -62,6 +68,7 @@ It also writes:
 - `rag_chunks.jsonl`
 - `exports/generic_chunks.jsonl`
 - `exports/dify_chunks.csv`
+- `exports/coze_chunks.csv`
 - `exports/fastgpt_chunks.jsonl`
 - `exports/ragflow_chunks.jsonl`
 - `exports/manifest.json`
@@ -91,6 +98,18 @@ The first commercial version should stay focused:
 - private local deployment
 - export packs for Dify, FastGPT, RAGFlow, Coze, and custom RAG systems
 - industry templates for contracts, training material, product manuals, and support docs
+
+## Deployment And Validation
+
+- `docs/deployment.md`: Windows and Docker deployment notes
+- `docs/validation.md`: real-document validation checklist
+- `docs/smoke-test.md`: latest local smoke-test result
+
+Docker quick start:
+
+```powershell
+docker compose up --build
+```
 
 ## License
 

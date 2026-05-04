@@ -32,6 +32,13 @@ def test_export_knowledge_pack_writes_expected_files(tmp_path):
 
     paths = export_knowledge_pack(report, tmp_path)
 
-    assert set(paths) == {"generic_jsonl", "dify_csv", "fastgpt_jsonl", "ragflow_jsonl", "manifest"}
+    assert set(paths) == {
+        "generic_jsonl",
+        "dify_csv",
+        "coze_csv",
+        "fastgpt_jsonl",
+        "ragflow_jsonl",
+        "manifest",
+    }
     for path in paths.values():
         assert path
