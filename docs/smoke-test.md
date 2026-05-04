@@ -39,8 +39,23 @@ Generated outputs:
 - `exports/coze_chunks.csv`
 - `exports/fastgpt_chunks.jsonl`
 - `exports/ragflow_chunks.jsonl`
+- `exports/review_checklist.csv`
+- `exports/review_checklist.md`
+- `exports/docpipe_export_pack.zip`
 - `exports/manifest.json`
 - structured chunk metadata: heading paths, token estimates, and table flags
+
+Demo command:
+
+```powershell
+docpipe demo --output outputs/demo
+```
+
+Demo result:
+
+- 5/5 included sample files converted successfully.
+- `outputs/demo/exports/review_checklist.md` was generated.
+- `outputs/demo/exports/docpipe_export_pack.zip` was generated.
 
 Notes:
 

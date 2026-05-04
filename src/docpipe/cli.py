@@ -68,6 +68,34 @@ def convert(
 
 
 @app.command()
+def demo(
+    output: Path = typer.Option(Path("outputs/demo"), "--output", "-o", help="Demo output folder."),
+    max_chunk_chars: int = typer.Option(1200, help="Maximum characters per RAG chunk."),
+) -> None:
+    """Run DocPipe against the included sample documents."""
+    sample_dir = _find_samples_dir()
+    report = convert_batch(
+        sample_dir,
+        output,
+        engine="auto",
+        max_chunk_chars=max_chunk_chars,
+        job_id="demo",
+        create_job_dir=False,
+        max_retries=1,
+    )
+    actual_output = Path(report.output_dir)
+    export_rag_pack(report, actual_output)
+    export_paths = export_knowledge_pack(report, actual_output)
+
+    console.print("[bold]DocPipe demo completed[/bold]")
+    console.print(f"Samples: {sample_dir.resolve()}")
+    console.print(f"Output: {actual_output.resolve()}")
+    console.print(f"Export ZIP: {Path(export_paths['zip']).resolve()}")
+    console.print(f"Review checklist: {Path(export_paths['review_checklist_md']).resolve()}")
+    console.print(f"Converted: {report.succeeded}/{report.total}")
+
+
+@app.command()
 def history(output: Path = typer.Option(Path("outputs"), "--output", "-o", help="Output root.")) -> None:
     table = Table(title="DocPipe Job History")
     table.add_column("Job")
@@ -103,6 +131,17 @@ def engines() -> None:
             adapter.description,
         )
     console.print(table)
+
+
+def _find_samples_dir() -> Path:
+    candidates = [
+        Path.cwd() / "samples",
+        Path(__file__).resolve().parents[2] / "samples",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    raise typer.BadParameter("No samples folder found. Run this command from the DocPipe repo root.")
 
 
 if __name__ == "__main__":

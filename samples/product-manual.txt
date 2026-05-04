@@ -1,0 +1,15 @@
+DocPipe Operator Manual
+
+Overview
+DocPipe converts mixed enterprise documents into Markdown, JSON, and RAG-ready chunks.
+
+Recommended workflow
+1. Collect source files into one folder.
+2. Run DocPipe in local mode.
+3. Review the conversion report.
+4. Check files listed in the review checklist.
+5. Import the export pack into the target knowledge-base system.
+
+Troubleshooting
+If a file fails conversion, retry with another route or inspect whether the source file
+is encrypted, corrupted, or missing text content.

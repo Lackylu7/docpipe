@@ -1,0 +1,20 @@
+{
+  "title": "Knowledge Base Vendor Evaluation",
+  "criteria": [
+    {
+      "name": "Private deployment",
+      "priority": "high",
+      "notes": "Must support internal documents and restricted customer data."
+    },
+    {
+      "name": "Import format",
+      "priority": "medium",
+      "notes": "CSV and JSONL starter formats are preferred."
+    },
+    {
+      "name": "Review workflow",
+      "priority": "high",
+      "notes": "Teams need to inspect risky conversions before import."
+    }
+  ]
+}

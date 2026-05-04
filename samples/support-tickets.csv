@@ -1,0 +1,5 @@
+ticket_id,category,question,answer
+1001,billing,How do I request an invoice?,Open the billing page and select Download Invoice.
+1002,security,Where is customer data processed?,The default deployment processes files locally.
+1003,knowledge_base,Can I import the export into Dify?,Use exports/dify_chunks.csv as a starter import file.
+1004,review,What should I check before import?,Open review_checklist.md and inspect files with warnings.

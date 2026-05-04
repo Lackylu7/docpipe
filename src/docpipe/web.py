@@ -112,6 +112,22 @@ with tab_convert:
             st.write("Export pack:")
             for name, path in export_paths.items():
                 st.write(f"- `{name}`: `{Path(path).resolve()}`")
+            zip_path = Path(export_paths["zip"])
+            if zip_path.exists():
+                st.download_button(
+                    "Download export ZIP",
+                    data=zip_path.read_bytes(),
+                    file_name=zip_path.name,
+                    mime="application/zip",
+                )
+            review_path = Path(export_paths["review_checklist_md"])
+            if review_path.exists():
+                st.download_button(
+                    "Download review checklist",
+                    data=review_path.read_bytes(),
+                    file_name=review_path.name,
+                    mime="text/markdown",
+                )
 
         rows = []
         for result in report.results:

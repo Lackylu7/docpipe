@@ -21,8 +21,11 @@ It turns messy documents into Markdown, JSON, and RAG chunks with a reviewable r
 - quality report for success, failure, engine choice, chunks, tables, and headings
 - lightweight quality scoring and review warnings
 - starter export folders for common knowledge-base workflows
+- portable export ZIP for customer handoff
+- review checklist for risky conversions
 - timestamped job folders for repeatable batch processing
 - Windows local startup script
+- included sample documents and one-command demo
 - Docker deployment files
 - validation checklist for real customer samples
 - structured chunks with heading paths, token estimates, and table flags
