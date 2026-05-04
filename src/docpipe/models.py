@@ -7,8 +7,8 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-EngineName = Literal["auto", "markitdown", "docling"]
-ResolvedEngineName = Literal["markitdown", "docling"]
+EngineName = Literal["auto", "markitdown", "docling", "unstructured", "mineru", "marker"]
+ResolvedEngineName = Literal["markitdown", "docling", "unstructured", "mineru", "marker"]
 
 
 class Chunk(BaseModel):
@@ -16,6 +16,9 @@ class Chunk(BaseModel):
     text: str
     chars: int
     heading: str | None = None
+    heading_path: list[str] = Field(default_factory=list)
+    token_estimate: int = 0
+    contains_table: bool = False
 
 
 class QualityMetrics(BaseModel):

@@ -6,6 +6,7 @@ from pathlib import Path
 import streamlit as st
 
 from docpipe.exports import export_knowledge_pack
+from docpipe.engines import list_engines
 from docpipe.history import list_jobs
 from docpipe.pipeline import convert_batch, export_rag_pack
 
@@ -17,12 +18,27 @@ st.caption("Enterprise document conversion for Markdown, JSON, and RAG-ready chu
 
 with st.sidebar:
     st.header("Settings")
-    engine = st.selectbox("Engine", ["auto", "markitdown", "docling"], index=0)
+    engine_names = ["auto", *[adapter.name for adapter in list_engines()]]
+    engine = st.selectbox("Engine", engine_names, index=0)
     max_chunk_chars = st.slider("Max chunk characters", min_value=500, max_value=3000, value=1400)
     max_retries = st.number_input("Retries per engine", min_value=0, max_value=3, value=1)
     output_dir = Path(st.text_input("Output folder", value="outputs")).expanduser()
     create_job_dir = st.checkbox("Create a timestamped job folder", value=True)
     write_export_pack = st.checkbox("Write knowledge-base export pack", value=True)
+with st.expander("Engine registry", expanded=False):
+    st.dataframe(
+        [
+            {
+                "engine": adapter.name,
+                "priority": adapter.priority,
+                "extensions": ", ".join(sorted(adapter.extensions)) or "planned adapter",
+                "description": adapter.description,
+            }
+            for adapter in list_engines()
+        ],
+        use_container_width=True,
+    )
+
 st.info("PDF files default to Docling. Office and web/text files default to MarkItDown.")
 
 tab_convert, tab_history = st.tabs(["Convert", "Job history"])
@@ -75,6 +91,20 @@ with tab_convert:
                 export_paths = export_knowledge_pack(report, actual_output) if write_export_pack else {}
 
         st.success(f"Converted {report.succeeded}/{report.total} files.")
+        review_required = sum(
+            1
+            for result in report.results
+            if result.metrics and result.metrics.review_required
+        )
+        avg_score = (
+            sum(result.metrics.quality_score for result in report.results if result.metrics)
+            / max(sum(1 for result in report.results if result.metrics), 1)
+        )
+        metric_cols = st.columns(4)
+        metric_cols[0].metric("Files", report.total)
+        metric_cols[1].metric("Succeeded", report.succeeded)
+        metric_cols[2].metric("Review needed", review_required)
+        metric_cols[3].metric("Average score", f"{avg_score:.0f}")
         st.write(f"Job: `{report.job_id}`")
         st.write(f"Output folder: `{Path(report.output_dir).resolve()}`")
         st.write(f"RAG pack: `{rag_path.resolve()}`")
@@ -95,11 +125,18 @@ with tab_convert:
                     "review": result.metrics.review_required if result.metrics else True,
                     "chunks": result.metrics.chunks if result.metrics else 0,
                     "chars": result.metrics.chars if result.metrics else 0,
+                    "tables": result.metrics.tables if result.metrics else 0,
+                    "headings": result.metrics.headings if result.metrics else 0,
                     "attempts": result.attempts,
                     "error": result.error,
                 }
             )
         st.dataframe(rows, use_container_width=True)
+
+        review_rows = [row for row in rows if row["review"] or row["status"] == "failed"]
+        if review_rows:
+            st.warning("Some files need review before knowledge-base import.")
+            st.dataframe(review_rows, use_container_width=True)
 
         successful = [result for result in report.results if result.status == "success"]
         if successful:

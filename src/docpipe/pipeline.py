@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from docpipe.chunker import chunk_markdown, quality_metrics
-from docpipe.engines import choose_engine, convert_with_engine, fallback_engine
+from docpipe.engines import choose_engine, convert_with_engine, fallback_engines
 from docpipe.models import BatchReport, ConversionResult, EngineName, SourceProfile
 
 
@@ -57,9 +57,7 @@ def convert_file(
     attempts = 0
 
     try:
-        engines = [selected_engine]
-        if engine == "auto":
-            engines.append(fallback_engine(selected_engine))
+        engines = [selected_engine] if engine != "auto" else fallback_engines(source_path, selected_engine)
 
         last_error: Exception | None = None
         markdown = ""
@@ -190,6 +188,9 @@ def export_rag_pack(report: BatchReport, output_dir: Path) -> Path:
                     "engine": result.used_engine,
                     "chunk_index": chunk.index,
                     "heading": chunk.heading,
+                    "heading_path": chunk.heading_path,
+                    "token_estimate": chunk.token_estimate,
+                    "contains_table": chunk.contains_table,
                     "text": chunk.text,
                 }
             )

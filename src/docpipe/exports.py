@@ -38,6 +38,9 @@ def _chunk_rows(report: BatchReport) -> list[dict[str, object]]:
                     "engine": result.used_engine,
                     "chunk_index": chunk.index,
                     "heading": chunk.heading or "",
+                    "heading_path": " > ".join(chunk.heading_path),
+                    "token_estimate": chunk.token_estimate,
+                    "contains_table": chunk.contains_table,
                     "quality_score": result.metrics.quality_score if result.metrics else None,
                 }
             )
@@ -63,6 +66,9 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> Path:
                 "engine",
                 "chunk_index",
                 "heading",
+                "heading_path",
+                "token_estimate",
+                "contains_table",
                 "quality_score",
             ],
         )

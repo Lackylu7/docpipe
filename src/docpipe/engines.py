@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 from docpipe.models import EngineName, ResolvedEngineName
@@ -33,15 +34,84 @@ class ConversionError(RuntimeError):
     pass
 
 
+@dataclass(frozen=True)
+class EngineAdapter:
+    name: ResolvedEngineName
+    extensions: set[str]
+    priority: int
+    description: str
+
+    def supports(self, path: Path) -> bool:
+        return path.suffix.lower() in self.extensions
+
+    def convert(self, path: Path) -> str:
+        if self.name == "markitdown":
+            return _convert_markitdown(path)
+        if self.name == "docling":
+            return _convert_docling(path)
+        raise ConversionError(
+            f"Engine '{self.name}' is not installed. Add its adapter before using it."
+        )
+
+
+ENGINE_REGISTRY: dict[ResolvedEngineName, EngineAdapter] = {
+    "markitdown": EngineAdapter(
+        name="markitdown",
+        extensions=MARKITDOWN_EXTENSIONS,
+        priority=20,
+        description="Fast broad conversion for Office, web, text, images, and audio.",
+    ),
+    "docling": EngineAdapter(
+        name="docling",
+        extensions=DOCLING_EXTENSIONS,
+        priority=10,
+        description="Structure-aware conversion for PDF, layout, and table-heavy documents.",
+    ),
+    "unstructured": EngineAdapter(
+        name="unstructured",
+        extensions=set(),
+        priority=90,
+        description="Planned optional adapter for Unstructured document ETL.",
+    ),
+    "mineru": EngineAdapter(
+        name="mineru",
+        extensions=set(),
+        priority=91,
+        description="Planned optional adapter for MinerU PDF/OCR pipelines.",
+    ),
+    "marker": EngineAdapter(
+        name="marker",
+        extensions=set(),
+        priority=92,
+        description="Planned optional adapter for Marker PDF-to-Markdown pipelines.",
+    ),
+}
+
+
 def choose_engine(path: Path, requested: EngineName) -> ResolvedEngineName:
-    if requested in {"markitdown", "docling"}:
+    if requested != "auto":
         return requested
     suffix = path.suffix.lower()
     if suffix == ".pdf":
         return "docling"
     if suffix in MARKITDOWN_EXTENSIONS:
         return "markitdown"
-    return "markitdown"
+    candidates = [
+        adapter for adapter in ENGINE_REGISTRY.values() if adapter.supports(path) and adapter.priority < 90
+    ]
+    if not candidates:
+        return "markitdown"
+    return sorted(candidates, key=lambda adapter: adapter.priority)[0].name
+
+
+def fallback_engines(path: Path, primary: ResolvedEngineName) -> list[ResolvedEngineName]:
+    engines = [primary]
+    for adapter in sorted(ENGINE_REGISTRY.values(), key=lambda item: item.priority):
+        if adapter.priority >= 90 or adapter.name == primary:
+            continue
+        if adapter.supports(path) or adapter.name == "markitdown":
+            engines.append(adapter.name)
+    return engines
 
 
 def fallback_engine(engine: ResolvedEngineName) -> ResolvedEngineName:
@@ -49,9 +119,11 @@ def fallback_engine(engine: ResolvedEngineName) -> ResolvedEngineName:
 
 
 def convert_with_engine(path: Path, engine: ResolvedEngineName) -> str:
-    if engine == "markitdown":
-        return _convert_markitdown(path)
-    return _convert_docling(path)
+    return ENGINE_REGISTRY[engine].convert(path)
+
+
+def list_engines() -> list[EngineAdapter]:
+    return sorted(ENGINE_REGISTRY.values(), key=lambda adapter: adapter.priority)
 
 
 def _convert_markitdown(path: Path) -> str:

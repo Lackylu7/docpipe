@@ -6,6 +6,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from docpipe.engines import list_engines
 from docpipe.exports import export_knowledge_pack
 from docpipe.history import list_jobs
 from docpipe.models import EngineName
@@ -83,6 +84,23 @@ def history(output: Path = typer.Option(Path("outputs"), "--output", "-o", help=
             str(job["succeeded"]),
             str(job["failed"]),
             str(job["output_dir"]),
+        )
+    console.print(table)
+
+
+@app.command()
+def engines() -> None:
+    table = Table(title="DocPipe Engine Registry")
+    table.add_column("Engine")
+    table.add_column("Priority", justify="right")
+    table.add_column("Extensions")
+    table.add_column("Description")
+    for adapter in list_engines():
+        table.add_row(
+            adapter.name,
+            str(adapter.priority),
+            ", ".join(sorted(adapter.extensions)) or "planned adapter",
+            adapter.description,
         )
     console.print(table)
 

@@ -12,7 +12,7 @@ Environment:
 Command:
 
 ```powershell
-docpipe convert data\smoke-inputs --output outputs\smoke --engine auto --max-retries 1
+docpipe convert data\smoke-inputs --output outputs\smoke-v02 --engine auto --max-retries 1
 ```
 
 Sample files:
@@ -40,10 +40,12 @@ Generated outputs:
 - `exports/fastgpt_chunks.jsonl`
 - `exports/ragflow_chunks.jsonl`
 - `exports/manifest.json`
+- structured chunk metadata: heading paths, token estimates, and table flags
 
 Notes:
 
 - Docling downloaded OCR and layout model assets on first run.
 - Short synthetic samples correctly triggered `very_short_output` warnings.
+- v0.2 smoke test succeeded with 7/7 files and generated 10 chunks.
 - Real customer validation should use longer, messier documents with tables, scans,
   and mixed Chinese/English content.

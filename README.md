@@ -8,6 +8,7 @@ The goal is not to rewrite either project. DocPipe adds the missing product laye
 
 - one local web UI for batch conversion
 - automatic engine routing
+- plugin-style engine registry
 - Markdown and JSON export
 - RAG-ready chunk generation
 - conversion quality report
@@ -104,6 +105,7 @@ The first commercial version should stay focused:
 - `docs/deployment.md`: Windows and Docker deployment notes
 - `docs/validation.md`: real-document validation checklist
 - `docs/smoke-test.md`: latest local smoke-test result
+- `docs/adapter-architecture.md`: parser adapter design
 
 Docker quick start:
 

@@ -20,6 +20,7 @@ More content here.
 
     assert chunks
     assert chunks[0].heading == "Title"
+    assert chunks[0].heading_path == ["Title"]
     assert metrics.tables == 1
     assert metrics.headings == 2
     assert metrics.quality_score > 0
@@ -33,3 +34,19 @@ def test_chunk_markdown_splits_long_content() -> None:
 
     assert len(chunks) > 1
     assert all(chunk.chars <= 260 for chunk in chunks)
+
+
+def test_chunk_markdown_tracks_nested_heading_path() -> None:
+    markdown = """# Root
+
+Intro.
+
+## Child
+
+Details.
+"""
+
+    chunks = chunk_markdown(markdown, max_chars=50)
+
+    assert chunks[-1].heading_path == ["Root", "Child"]
+    assert chunks[-1].token_estimate > 0

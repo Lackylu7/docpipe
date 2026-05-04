@@ -15,6 +15,7 @@ It turns messy documents into Markdown, JSON, and RAG chunks with a reviewable r
 
 - batch upload or folder conversion
 - automatic engine routing between MarkItDown and Docling
+- plugin-style engine registry for future adapters
 - Markdown and JSON export
 - RAG chunk JSONL export
 - quality report for success, failure, engine choice, chunks, tables, and headings
@@ -24,6 +25,7 @@ It turns messy documents into Markdown, JSON, and RAG chunks with a reviewable r
 - Windows local startup script
 - Docker deployment files
 - validation checklist for real customer samples
+- structured chunks with heading paths, token estimates, and table flags
 
 ## Not In Scope Yet
 
