@@ -115,6 +115,7 @@ The Web workbench supports:
 ```powershell
 docpipe demo --language zh-CN
 docpipe convert .\samples-cn --workflow-template enterprise-policy --language zh-CN
+docpipe stress-demo --files 80 --language zh-CN
 docpipe templates --language zh-CN
 docpipe engines
 docpipe history --output .\outputs
@@ -131,6 +132,11 @@ Templates help turn a generic converter into a repeatable delivery workflow.
 | `enterprise-policy` | HR policies, SOPs, compliance manuals, internal rules | 1100 |
 | `support-faq` | ticket exports, help-center pages, FAQ cleanup | 900 |
 | `product-manual` | manuals, onboarding guides, release notes, training material | 1600 |
+| `sales-enablement` | sales playbooks, battlecards, pricing notes, objection handling | 1000 |
+| `legal-contract` | contract templates, legal clauses, procurement terms, risk notes | 900 |
+| `finance-report` | reimbursement rules, audit notes, invoice SOPs, finance FAQs | 1000 |
+| `training-onboarding` | onboarding guides, certification material, internal courses | 1300 |
+| `operations-sop` | operation procedures, incident playbooks, QA checklists | 1050 |
 
 Each template adjusts the default chunk size and writes template-specific review focus
 and handoff steps into `exports/handoff_guide.md`.
@@ -207,6 +213,7 @@ Deployment notes: [docs/deployment.md](docs/deployment.md)
 | [docs/demo-result-preview.md](docs/demo-result-preview.md) | committed sample output preview |
 | [docs/case-study-company-knowledge-base.md](docs/case-study-company-knowledge-base.md) | realistic Chinese company-folder demo |
 | [docs/industry-templates.md](docs/industry-templates.md) | workflow template guide |
+| [docs/synthetic-load-test.md](docs/synthetic-load-test.md) | generated mixed-company load test |
 | [docs/localization.md](docs/localization.md) | Chinese and English support |
 | [docs/commercial-delivery.md](docs/commercial-delivery.md) | service-led delivery notes |
 | [docs/benchmarks.md](docs/benchmarks.md) | current local benchmark notes |

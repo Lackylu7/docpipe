@@ -12,6 +12,11 @@ flow. Each template controls the default chunk size and the review guidance writ
 | `enterprise-policy` | HR policies, SOPs, compliance manuals, internal rules | 1100 |
 | `support-faq` | ticket exports, help-center pages, FAQ cleanup | 900 |
 | `product-manual` | manuals, onboarding guides, release notes, training material | 1600 |
+| `sales-enablement` | sales playbooks, battlecards, pricing notes, objection handling | 1000 |
+| `legal-contract` | contract templates, legal clauses, procurement terms, risk notes | 900 |
+| `finance-report` | reimbursement rules, audit notes, invoice SOPs, finance FAQs | 1000 |
+| `training-onboarding` | onboarding guides, certification material, internal courses | 1300 |
+| `operations-sop` | operation procedures, incident playbooks, QA checklists | 1050 |
 
 ## CLI Usage
 
@@ -33,6 +38,8 @@ Convert a customer folder with the support FAQ template:
 ```powershell
 docpipe convert .\customer-docs --workflow-template support-faq
 docpipe convert .\samples-cn --workflow-template enterprise-policy --language zh-CN
+docpipe convert .\customer-sales-pack --workflow-template sales-enablement
+docpipe convert .\customer-sop --workflow-template operations-sop --language zh-CN
 ```
 
 ## Handoff Guide

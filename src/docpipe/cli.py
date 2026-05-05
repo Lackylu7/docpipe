@@ -12,6 +12,7 @@ from docpipe.history import list_jobs
 from docpipe.i18n import Language
 from docpipe.models import EngineName
 from docpipe.pipeline import convert_batch, export_rag_pack
+from docpipe.synthetic import generate_synthetic_dataset
 from docpipe.templates import get_template, list_templates, template_description, template_name
 
 app = typer.Typer(help="Convert enterprise documents into Markdown, JSON, and RAG chunks.")
@@ -128,6 +129,52 @@ def demo(
         console.print(f"Review checklist: {Path(export_paths['review_checklist_md']).resolve()}")
         console.print(f"Handoff guide: {Path(export_paths['handoff_guide']).resolve()}")
         console.print(f"Converted: {report.succeeded}/{report.total}")
+
+
+@app.command("stress-demo")
+def stress_demo(
+    output: Path = typer.Option(
+        Path("outputs/stress-demo"), "--output", "-o", help="Stress-demo output folder."
+    ),
+    files: int = typer.Option(80, "--files", min=1, max=500, help="Synthetic file count."),
+    seed: int = typer.Option(7, "--seed", help="Deterministic synthetic data seed."),
+    workflow_template: str = typer.Option(
+        "general", help="Workflow template used for chunk size and handoff guidance."
+    ),
+    language: Language = typer.Option("zh-CN", help="Output language: en or zh-CN."),
+    max_chunk_chars: int = typer.Option(
+        0, help="Maximum characters per RAG chunk. Use 0 for the selected workflow template."
+    ),
+) -> None:
+    """Generate a mixed synthetic company folder, then run a batch conversion."""
+    dataset_dir = output / "input"
+    run_dir = output / "converted"
+    summary = generate_synthetic_dataset(dataset_dir, file_count=files, seed=seed)
+    template = get_template(workflow_template)
+    chunk_chars = max_chunk_chars or template.max_chunk_chars
+
+    report = convert_batch(
+        dataset_dir,
+        run_dir,
+        engine="auto",
+        max_chunk_chars=chunk_chars,
+        job_id="stress-demo",
+        create_job_dir=False,
+        max_retries=1,
+    )
+    actual_output = Path(report.output_dir)
+    export_rag_pack(report, actual_output)
+    export_paths = export_knowledge_pack(
+        report, actual_output, workflow_template=workflow_template, language=language
+    )
+
+    console.print("[bold]DocPipe stress demo completed[/bold]")
+    console.print(f"Generated files: {summary.file_count}")
+    console.print(f"Categories: {', '.join(summary.categories)}")
+    console.print(f"Input: {dataset_dir.resolve()}")
+    console.print(f"Output: {actual_output.resolve()}")
+    console.print(f"Export ZIP: {Path(export_paths['zip']).resolve()}")
+    console.print(f"Converted: {report.succeeded}/{report.total}")
 
 
 @app.command()

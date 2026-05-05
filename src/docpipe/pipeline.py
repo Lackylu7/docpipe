@@ -48,8 +48,10 @@ def convert_file(
     engine: EngineName = "auto",
     max_chunk_chars: int = 1400,
     max_retries: int = 1,
+    source_label: str | None = None,
 ) -> ConversionResult:
     source_path = source_path.resolve()
+    source_display = source_label or source_path.name
     output_dir.mkdir(parents=True, exist_ok=True)
     requested_engine = engine
     selected_engine = choose_engine(source_path, engine)
@@ -79,13 +81,13 @@ def convert_file(
 
         chunks = chunk_markdown(markdown, max_chars=max_chunk_chars)
         metrics = quality_metrics(markdown, chunks)
-        stem = _safe_stem(source_path)
+        stem = _safe_stem(source_display, source_path.suffix)
         markdown_path = output_dir / f"{stem}.md"
         json_path = output_dir / f"{stem}.json"
         markdown_path.write_text(markdown, encoding="utf-8")
 
         result = ConversionResult(
-            source_path=str(source_path),
+            source_path=source_display,
             output_markdown_path=str(markdown_path),
             output_json_path=str(json_path),
             requested_engine=requested_engine,
@@ -101,7 +103,7 @@ def convert_file(
         return result
     except Exception as exc:
         return ConversionResult(
-            source_path=str(source_path),
+            source_path=source_display,
             requested_engine=requested_engine,
             used_engine=selected_engine,
             status="failed",
@@ -123,6 +125,7 @@ def convert_batch(
     job_id = job_id or _new_job_id()
     output_dir = output_dir / job_id if create_job_dir else output_dir
     files = discover_files(input_path)
+    input_root = input_path.resolve() if input_path.is_dir() else input_path.resolve().parent
     results = [
         convert_file(
             path,
@@ -130,12 +133,13 @@ def convert_batch(
             engine=engine,
             max_chunk_chars=max_chunk_chars,
             max_retries=max_retries,
+            source_label=_source_label(path, input_root),
         )
         for path in files
     ]
     report = BatchReport(
         job_id=job_id,
-        output_dir=str(output_dir.resolve()),
+        output_dir=str(output_dir),
         total=len(results),
         succeeded=sum(1 for result in results if result.status == "success"),
         failed=sum(1 for result in results if result.status == "failed"),
@@ -199,8 +203,19 @@ def export_rag_pack(report: BatchReport, output_dir: Path) -> Path:
     return path
 
 
-def _safe_stem(path: Path) -> str:
-    return "".join(char if char.isalnum() or char in {"-", "_"} else "_" for char in path.stem)
+def _safe_stem(source_label: str, suffix: str = "") -> str:
+    label = source_label
+    if suffix and label.lower().endswith(suffix.lower()):
+        label = label[: -len(suffix)]
+    return "".join(char if char.isalnum() or char in {"-", "_"} else "_" for char in label)
+
+
+def _source_label(path: Path, input_root: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(input_root).as_posix()
+    except ValueError:
+        return resolved.name
 
 
 def _new_job_id() -> str:

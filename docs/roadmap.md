@@ -10,12 +10,13 @@ DocPipe should stay focused on one core promise:
 - CLI batch conversion
 - Chinese and English interface/output
 - Workflow templates
+- Synthetic mixed-company load test
 - Review checklist and handoff guide
 - Starter exports for common knowledge-base workflows
 
 ## Next: 0.2
 
-- More realistic Chinese customer demo set
+- Real PDF, Word, Excel, and PowerPoint validation set
 - One-click ZIP download from every successful Web run
 - Release package with versioned artifacts
 - Basic performance benchmark on larger folders
